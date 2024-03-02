@@ -3,6 +3,7 @@ import urandom
 from pimoroni import Button
 from picographics import PicoGraphics, DISPLAY_INKY_PACK
 
+from chaos import get_chaos, get_transform
 from names import get_human, get_goblin, get_elfe, get_dwarf, get_orc, get_saurien
 from descriptions import (
     get_physical_description,
@@ -174,26 +175,28 @@ class NameApp(App):
 
 class ChaosApp(App):
     name = "Chaos"
+    pages = ["Effets", "Transformations"]
 
     def on_a(self):
         clear()
-        self.page = 1
+        display.text(get_chaos())
 
     def on_b(self):
         clear()
-        self.page = 2
+        display.text(get_transform())
 
     def on_c(self):
         clear()
-        self.page = 3
 
     def on_default(self):
-        if self.page == 0:
-            display.set_pen(FG)
-            display.text("] Effets", 0, 57, WIDTH, 1)
-            display.text("] Transformation", 0, 178, WIDTH, 1)
-            display.text("Reset [", 178, 57, WIDTH, 1)
-        display.update()
+        if not self.is_displayed:
+            clear()
+            for i, page in enumerate(self.pages):
+                display.text(page, 10, 20 + 40 * i, WIDTH, FONT_SIZE)
+            self.is_displayed = True
+            display.update()
+        else:
+            time.sleep(0.1)
 
 
 class DescriptionApp(App):
