@@ -268,7 +268,6 @@ class DescriptionApp(App):
 
 class QuickNPC(App):
     name = "Vite, un PNJ!"
-    pages = ["Description", "Loot"]
 
     def __init__(self):
         super().__init__()
@@ -279,6 +278,21 @@ class QuickNPC(App):
             "trait": list(),
             "accessory": list(),
         }
+        self.specie = ""
+        self.gender = False
+        self.npc_name = ""
+        self.physical = ""
+        self.mental = ""
+        self.trait = ""
+        self.accessory = ""
+        self.saved_specie = ""
+        self.saved_gender = False
+        self.saved_name = ""
+        self.saved_physical = ""
+        self.saved_mental = ""
+        self.saved_trait = ""
+        self.saved_accessory = ""
+        self.saved_state = False
         self.names = {
             "Humain": get_human,
             "Nain": get_dwarf,
@@ -289,7 +303,18 @@ class QuickNPC(App):
         }
         self.font_size = 0.7
 
-    def show_page(self, for_page):
+        self.randomize()
+
+    def show_page(self):
+        clear()
+        display.text(self.npc_name, 0, 15, WIDTH, self.font_size)
+        display.text(self.specie + " " + self.physical, 0, 40, WIDTH, self.font_size)
+        display.text(self.mental + " & " + self.trait, 0, 65, WIDTH, self.font_size)
+        display.text(self.accessory, 0, 90, WIDTH, self.font_size)
+        display.update()
+
+    def randomize(self):
+
         def choose(hist, generator, is_fem):
             var = generator(is_fem)
             while var in self.history[hist]:
@@ -299,42 +324,62 @@ class QuickNPC(App):
                 self.history[hist].pop(0)
             return var
 
-        clear()
-        if for_page == "Description":
-            specie = urandom.choice(list(self.names.keys()))
-            gender = urandom.random() > 0.5
-            display.text(choose("name", self.names[specie], gender), 0, 10, WIDTH, self.font_size)
-            display.text(specie, 0, 30, WIDTH, self.font_size)
-            display.text(choose("physical", get_physical_description, gender), 0, 50, WIDTH, self.font_size)
-            display.text(choose("mental", get_mental_description, gender), 0, 70, WIDTH, self.font_size)
-            display.text(choose("trait", get_trait, gender), 0, 90, WIDTH, self.font_size)
-            display.text(choose("accessory", get_accessories, None), 0, 110, WIDTH, self.font_size)
-        elif for_page == "Loot":
-            display.text(get_accessories(), 0, 20, WIDTH, self.font_size)
-            display.text(get_accessories(), 0, 50, WIDTH, self.font_size)
-            display.text(get_f_weapons(), 0, 80, WIDTH, self.font_size)
-            display.text(get_f_weapons(), 0, 110, WIDTH, self.font_size)
+        self.specie = urandom.choice(list(self.names.keys()))
+        self.gender = urandom.random() > 0.5
+        self.npc_name = choose("name", self.names[self.specie], self.gender)
+        self.physical = choose("physical", get_physical_description, self.gender)
+        self.mental = choose("mental", get_mental_description, self.gender)
+        self.trait = choose("trait", get_trait, self.gender)
+        self.accessory = choose("accessory", get_accessories, None) + " & " + choose("accessory", get_accessories, None)
 
+    def save_state(self):
+        self.saved_specie = self.specie
+        self.saved_gender = self.gender
+        self.saved_name = self.npc_name
+        self.saved_physical = self.physical
+        self.saved_mental = self.mental
+        self.saved_trait = self.trait
+        self.saved_accessory = self.accessory
+        self.saved_state = True
+
+    def restore_state(self):
+        self.specie = self.saved_specie
+        self.gender = self.saved_gender
+        self.npc_name = self.saved_name
+        self.physical = self.saved_physical
+        self.mental = self.saved_mental
+        self.trait = self.saved_trait
+        self.accessory = self.saved_accessory
+
+    def show_saved_popup(self):
+        display.set_pen(FG)
+        display.rectangle(45, 36, WIDTH - 95, HEIGHT - 76)
+        display.set_pen(BG)
+        display.rectangle(47, 38, WIDTH - 99, HEIGHT - 80)
+        display.set_pen(FG)
+        display.text("SAVED", 50, HEIGHT // 2, 1)
         display.update()
+        time.sleep(2)
+        self.show_page()
 
     def on_a(self):
-        self.show_page(self.pages[0])
+        self.randomize()
+        self.show_page()
 
     def on_b(self):
-        self.show_page(self.pages[1])
+        self.save_state()
+        self.show_saved_popup()
 
     def on_c(self):
-        self.show_page(self.pages[2])
+        if self.saved_state:
+            self.restore_state()
+            self.show_page()
 
     def on_default(self):
         if not self.is_displayed:
-            clear()
-            for i, page in enumerate(self.pages):
-                display.text(page, 10, 20 + 40 * i, WIDTH, FONT_SIZE)
+            self.show_page()
             self.is_displayed = True
-            display.update()
-        else:
-            time.sleep(0.1)
+        time.sleep(0.1)
 
 
 app = None

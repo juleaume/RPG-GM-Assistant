@@ -156,7 +156,7 @@ accessories = [
     "amulette",
     "araignée",
     "arme énorme",
-    "armure élimée",
+    "armure délabrée",
     "armure",
     "bague",
     "baluchon",
